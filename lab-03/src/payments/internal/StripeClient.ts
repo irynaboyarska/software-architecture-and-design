@@ -12,7 +12,11 @@ export type StripeResponse = {
 
 export class StripeClient {
   async createCharge(payload: StripePayload): Promise<StripeResponse> {
-    const state = payload.id.startsWith("fail_") ? "declined" : "succeeded";
+    const state = payload.id.startsWith("fail_")
+      ? "declined"
+      : payload.id.startsWith("proc_")
+        ? "requires_action"
+        : "succeeded";
     return { charge_id: `ch_${payload.id}`, state };
   }
 }

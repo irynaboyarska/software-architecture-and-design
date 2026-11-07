@@ -37,20 +37,22 @@
 
 **Actual files changed:**
 
-- src/payments: нові index.ts, types.ts, internal/stripeAdapter.ts, internal/stripeStatus.ts; змінено internal/StripeClient.ts;
+- src/payments: нові index.ts, types.ts, internal/provider.ts, internal/registry.ts, internal/stripeAdapter.ts, internal/stripeStatus.ts, internal/AcmePayClient.ts, internal/acmePayAdapter.ts, internal/acmePayStatus.ts; змінено internal/StripeClient.ts;
 - src/orders/OrderService.ts; видалено src/orders/internal/orderMutations.ts;
 - src/checkout/CheckoutController.ts;
 - src/inventory: новий index.ts; видалено StockRepository.ts;
 - src/shared/calculateTotal.ts;
 - видалено mapPaymentStatus.ts в orders, reports і notifications;
-- нові тести: paymentStatus.unit, payments.contract, inventory.unit, calculateTotal.unit, checkout.contract.
+- scripts/architecture-checks.ts і scripts/check-architecture.ts; у package.json додано скрипт check:architecture;
+- ADR-001-payments-boundary.md і README.md;
+- нові тести: paymentStatus.unit, acmePayStatus.unit, payments.contract, payments.providers, inventory.unit, calculateTotal.unit, checkout.contract, architecture;
 - package.json, package-lock.json, tsconfig.json: типи Node для редактора.
 
 **Difference from prediction and explanation:**
 
 - Reports і Notifications: прогноз передбачав видалення дублікатів, і це єдина зміна в них; після неї в цих папках немає коду, бо вони містили лише копії мапінгу.
 - src/inventory: StockRepository.ts не перетворено на internal, а видалено, бо ніхто його не використовував, а його updateAvailable дозволяв обійти інваріант.
-- src/payments: окрім прогнозованих файлів знадобився types.ts, щоб публічні типи не залежали від internal-коду.
-- OrderService змінився сильніше за прогноз: прибрано залежність від провайдера, і конструктор приймає функцію authorizePayment.
-- package.json: додано devDependency @types/node (разом із package-lock.json і tsconfig.json).
+- src/payments: окрім прогнозованих файлів знадобився types.ts, щоб публічні типи не залежали від internal-коду, а також provider.ts і registry.ts для вибору provider.
+- OrderService змінився сильніше за прогноз: прибрано залежність від provider, і конструктор приймає функцію authorizePayment.
+- Другий provider змінив лише src/payments/\*\* і тести: Checkout, Orders, Reports і Notifications не змінювалися, як і прогнозувалося.
 - src/database.ts, src/demo.ts, config.ts і форма відповіді Checkout не змінилися, як і прогнозувалося.

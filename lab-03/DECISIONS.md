@@ -127,3 +127,65 @@
 **Trade-off:** CheckoutController тепер знає про runtimeConfig і auditLog.
 
 **Verification:** Тести із замороженими рядками, зміненим runtimeConfig і незмінним auditLog.
+
+## Decision №8: Другий provider як окремий adapter
+
+**Problem:** Другий provider має інші назви полів і статусів, тому без межі його формат потрапив би в consumers або в спільний код.
+
+**Evidence:** mapPaymentStatus.ts:3-7 і CheckoutController.ts:22-28 у початковому коді вже показали, як формат Stripe витікає.
+
+**Decision:** Кожен provider є adapter у payments/internal з власним client, типами та нормалізацією; AcmePay повертає APPROVED, IN_REVIEW, REJECTED, які стають paid, processing, failed.
+
+**Why:** Нова назва статусу provider змінює лише його adapter (information hiding).
+
+**Alternative:** Одна спільна функція мапінгу для всіх provider.
+
+**Why rejected:** Вона знала б формати всіх provider і росла б із кожним новим.
+
+**Trade-off:** Правило «невідомий статус → failed» тепер повторюється в кожному adapter.
+
+**Verification:** Тести paid, processing і failed для обох provider через публічний API та unit-тести нормалізації.
+
+## Decision №9: Вибір provider усередині Payments
+
+**Problem:** Вибір provider не повинен змінювати Checkout чи Orders.
+
+**Evidence:** authorizePayment у payments/index.ts викликається з OrderService.ts без аргументу про provider.
+
+**Decision:** Payments читає PAYMENT_PROVIDER (за замовчуванням stripe) і шукає adapter у реєстрі; невідоме ім'я викликає помилку.
+
+**Why:** Вибір є деталлю конфігурації Payments, а помилка замість мовчазної заміни не відправить платіж не тому provider.
+
+**Alternative:** Передавати поле provider у PaymentRequest.
+
+**Why rejected:** Consumers мусили б знати імена provider, тобто контракт перестав би бути нейтральним.
+
+**Trade-off:** Вибір глобальний для процесу, тому різні provider для різних замовлень потребуватимуть нового рішення.
+
+**Verification:** Тести обох provider, значення за замовчуванням і відхилення невідомого імені; Checkout дає однакові відповіді.
+
+## Decision №10: Architecture fitness function
+
+**Problem:** Межі тримаються лише на домовленості, тому порушення потрапляють у код непомітно.
+
+**Evidence:** OrderService.ts:4 і StripeClient.ts:2 у початковому коді проходили всі тести попри порушення меж.
+
+**Decision:** npm run check:architecture аналізує імпорти кожного файлу в src і завершується кодом 1 за internal-імпорт між модулями, прямий доступ Orders чи Checkout до Inventory storage, цикл файлів або модулів.
+
+**Why:** Правило перевіряється на всьому дереві, а не на відомому рядку, тому ловить нові порушення.
+
+**Alternative:** Налаштувати ESLint із правилами імпортів.
+
+**Why rejected:** Потрібні залежності, а проєкт запускається без їх встановлення.
+
+**Trade-off:** Власний аналізатор не бачить шляхів, складених динамічно.
+
+**Verification:** Тести з тимчасовими деревами для кожного правила та перевірка, що поточний репозиторій чистий.
+
+## AI review
+
+**Корисна пропозиція.** AI запропонував передавати функцію `authorizePayment` у конструктор `OrderService` зі значенням за замовчуванням, яке є реальним `authorizePayment`. Завдяки цьому Orders залежить лише від публічного контракту Payments, а сценарій `processing` перевіряється в тесті без справжнього provider.
+
+**Відхилена пропозиція.** AI розглянув варіант залишити статус `pending` поряд із `processing`. Я його відхилила: обидва статуси означають «платіж ще не завершено», у початковому коді `pending` був недосяжним (`StripeClient` не повертав `requires_action`), а кожен consumer мав би обробляти зайву гілку. Набір статусів: `paid`, `processing`, `failed`.
+
+**Як перевірено.** Три стартові тести пройшли до змін і без змін після них. Для `OrderService` додано тест, що за результату `processing` замовлення лишається `payment_pending`, а відповідь Checkout містить `paymentStatus: "processing"`. Усі 48 тестів і `npm run check:architecture` проходять, а `new OrderService()` без аргументів, як і раніше, використовує реальний Payments (це покривають тести обох provider через Checkout).

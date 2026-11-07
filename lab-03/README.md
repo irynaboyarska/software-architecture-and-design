@@ -1,10 +1,10 @@
 # Architecture Lab 3
 
-Стартовий проєкт для практичної роботи з архітектури ПЗ.
+Практична робота 3: рефакторинг під зміну вимог (checkout backend).
 
-У репозиторії є checkout backend, який оформлює замовлення, працює із залишками товарів і проводить оплату. Код запускається та проходить базові тести, але містить архітектурні проблеми, які потрібно знайти й виправити під час практичної роботи.
+**Автор:** Боярська Ірина
 
-Умови завдання та вимоги до оцінювання наведені в описі практичної роботи.
+**Заявлений рівень:** 90
 
 ## Запуск
 
@@ -12,14 +12,28 @@
 
 ```bash
 npm test
+npm run check:architecture
 npm start
 ```
+
+Provider оплати вибирається змінною `PAYMENT_PROVIDER` (`stripe` за замовчуванням або `acmepay`). Токен, що починається з `fail_`, дає failed, з `proc_` дає processing, інший дає paid.
+
+## Перевірки
+
+- `npm test`: функціональні тести Checkout, unit-тести нормалізації статусів, контракту Payments (обидва provider), Inventory (`reserveStock`), `calculateTotal` та самої перевірки архітектури.
+- `npm run check:architecture`: завершується з кодом 1, якщо модуль імпортує internal-файл іншого модуля, Orders або Checkout напряму звертається до Inventory storage, або в імпортах файлів чи модулів є цикл.
 
 ## Структура
 
 ```text
-src/          код застосунку
-tests/        базові функціональні тести
-REVIEW.md     шаблон архітектурного review
-DECISIONS.md  шаблон журналу рішень
+src/payments/    публічний контракт у index.ts; adapters і мапінг статусів в internal/
+src/inventory/   reserveStock, власник інваріанта available >= 0
+src/orders/      OrderService, залежить лише від публічних API Payments і Inventory
+src/checkout/    CheckoutController, публічний API не змінився
+src/shared/      calculateTotal: чиста функція
+scripts/         перевірка архітектури
+tests/           тести
+REVIEW.md        review до змін, prediction і Actual impact
+DECISIONS.md     журнал рішень
+ADR-001-payments-boundary.md   рішення про межу Payments
 ```

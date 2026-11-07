@@ -2,7 +2,7 @@ import { database } from "../database.ts";
 import type { CartLine } from "../shared/calculateTotal.ts";
 // Deliberate boundary violation: Orders depends on a Payments implementation detail.
 import { StripeClient, type StripePayload } from "../payments/internal/StripeClient.ts";
-import { mapPaymentStatus } from "./mapPaymentStatus.ts";
+import { normalizePaymentStatus } from "../payments/paymentStatus.ts";
 
 export class OrderService {
   private readonly stripe: StripeClient;
@@ -27,7 +27,7 @@ export class OrderService {
 
     database.orders.set(orderId, { id: orderId, status: "created", total });
     const providerResponse = await this.stripe.createCharge(payload);
-    const paymentStatus = mapPaymentStatus(providerResponse);
+    const paymentStatus = normalizePaymentStatus(providerResponse);
     const order = database.orders.get(orderId)!;
     order.paymentStatus = paymentStatus;
     order.status = paymentStatus === "paid" ? "confirmed" : "payment_pending";

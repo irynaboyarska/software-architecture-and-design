@@ -37,4 +37,20 @@
 
 **Actual files changed:**
 
+- src/payments: нові index.ts, types.ts, internal/stripeAdapter.ts, internal/stripeStatus.ts; змінено internal/StripeClient.ts;
+- src/orders/OrderService.ts; видалено src/orders/internal/orderMutations.ts;
+- src/checkout/CheckoutController.ts;
+- src/inventory: новий index.ts; видалено StockRepository.ts;
+- src/shared/calculateTotal.ts;
+- видалено mapPaymentStatus.ts в orders, reports і notifications;
+- нові тести: paymentStatus.unit, payments.contract, inventory.unit, calculateTotal.unit, checkout.contract.
+- package.json, package-lock.json, tsconfig.json: типи Node для редактора.
+
 **Difference from prediction and explanation:**
+
+- Reports і Notifications: прогноз передбачав видалення дублікатів, і це єдина зміна в них; після неї в цих папках немає коду, бо вони містили лише копії мапінгу.
+- src/inventory: StockRepository.ts не перетворено на internal, а видалено, бо ніхто його не використовував, а його updateAvailable дозволяв обійти інваріант.
+- src/payments: окрім прогнозованих файлів знадобився types.ts, щоб публічні типи не залежали від internal-коду.
+- OrderService змінився сильніше за прогноз: прибрано залежність від провайдера, і конструктор приймає функцію authorizePayment.
+- package.json: додано devDependency @types/node (разом із package-lock.json і tsconfig.json).
+- src/database.ts, src/demo.ts, config.ts і форма відповіді Checkout не змінилися, як і прогнозувалося.

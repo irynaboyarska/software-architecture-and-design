@@ -1,0 +1,32 @@
+=== Параметри сценарію ===
+hourly cost: 35 USD/год | impact: 4,000 USD | changes override: з CSV
+investment: 320 год | savings share (tax): 25% | savings share (failures): 0%
+
+=== Метрики по періодах ===
+[baseline]
+  ChangeCost: 12 год x 35 = 420 USD/зміну
+  Architecture Tax/month: (420 USD - 420 USD) x 20 = 0 USD
+  ExpectedFailureCost/month: 1 x 4,000 USD = 4,000 USD
+  modules/change: 1.8 (+0% відносно baseline)
+[current]
+  ChangeCost: 31 год x 35 = 1,085 USD/зміну
+  Architecture Tax/month: (1,085 USD - 420 USD) x 20 = 13,300 USD
+  ExpectedFailureCost/month: 4 x 4,000 USD = 16,000 USD
+  modules/change: 4.6 (+156% відносно baseline)
+
+=== Підсумок: 'baseline' -> 'current' ===
+Architecture Tax: 13,300 USD/міс; приріст ExpectedFailureCost: 12,000 USD/міс
+Разом: 25,300 USD/міс (~303,600 USD/рік)
+
+=== Review thresholds (поточний період) ===
+  modules touched/change: 4.6 > 3 -> ПЕРЕТНУТО
+  engineering hours/change: 31 > 24 -> ПЕРЕТНУТО
+  rollback rate: 9% > 5% -> ПЕРЕТНУТО
+  incidents/month: 4 > 2 -> ПЕРЕТНУТО
+Перетнуто порогів: 4 (>=2) -> архітектурне рішення потрібно ПЕРЕГЛЯНУТИ.
+
+=== Інвестиція і break-even ===
+InvestmentCost: 320 год x 35 = 11,200 USD
+MonthlySavings: 13,300 USD x 25% + 12,000 USD x 0% = 3,325 USD/міс
+BreakEvenMonths: 11,200 USD / 3,325 USD = 3.37 міс.
+Рішення: <= 6 міс. -> інвестувати

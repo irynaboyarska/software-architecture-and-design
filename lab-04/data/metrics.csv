@@ -1,0 +1,3 @@
+period,engineering_hours,changes,modules_per_change,rollback_rate,incidents,lead_time_days,deploy_minutes,deployments_per_week,avg_pr_loc
+baseline,12,20,1.8,0.02,1,2,8,5,180
+current,31,20,4.6,0.09,4,6,24,2,510

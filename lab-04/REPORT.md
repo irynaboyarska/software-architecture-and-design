@@ -42,9 +42,6 @@ deploy duration ↑ → кожен deployment дорожчий і ризиков
 - Deploy duration — **leading** (спірно). Це водночас наслідок росту pipeline, але щодо бізнес-результатів він випереджає batching, rollback і incidents.
 - Rollback rate — **lagging** (спірно). Він показує, що якість змін уже впала; водночас відкати попереджають про майбутні incidents, тому для incidents він виступає як leading.
 - Engineering hours/change — **lagging.** Це вже реалізована вартість змін.
-- Lead time — **lagging.** Підсумок усіх затримок у delivery.
-- Incidents/month — **lagging.** Кінцевий негативний результат.
-- Average PR size — **leading, але слабкий**: ранній сигнал, який без контексту легко хибний.
 
 ---
 
